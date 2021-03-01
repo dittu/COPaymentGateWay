@@ -22,6 +22,10 @@ HashKey Type: ScalarAttributeType.S
 
 ## Implementation Details
 
+### Supported Card Types
+- Visa
+- Master
+
 ### UnitTest
 - NUnit
 
@@ -39,3 +43,4 @@ eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1MDAxIiw
 
 ### Datastorage
 - DynamoDB
+
