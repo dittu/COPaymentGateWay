@@ -1,5 +1,7 @@
 # Checkout.com: Payment Gateway
 
+[![Build status](https://ci.appveyor.com/api/projects/status/tb6wkrtxn850livm?svg=true)](https://ci.appveyor.com/project/dittu/copaymentgateway)
+
 ### Prerequisites
 
 ### AWS 
