@@ -1,6 +1,7 @@
 # Checkout.com: Payment Gateway
 
 [![Build status](https://ci.appveyor.com/api/projects/status/tb6wkrtxn850livm?svg=true)](https://ci.appveyor.com/project/dittu/copaymentgateway)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=dittu_COPaymentGateWay)](https://sonarcloud.io/dashboard?id=dittu_COPaymentGateWay)
 
 ### Prerequisites
 
