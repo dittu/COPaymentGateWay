@@ -45,3 +45,6 @@ eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1MDAxIiw
 ### Datastorage
 - DynamoDB
 
+### CI Scripts
+- Build  - appveyor
+- Quality - sonarcloud
