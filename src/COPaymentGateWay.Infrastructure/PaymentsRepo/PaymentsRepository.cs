@@ -1,6 +1,5 @@
-﻿using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.Model;
-using COPaymentGateWay.Core.Interfaces;
+﻿using COPaymentGateWay.Core.Interfaces;
+using COPaymentGateWay.Core.MockBank.Interfaces;
 using COPaymentGateWay.Core.Models;
 using COPaymentGateWay.Infrastructure.PaymentsRepo.Convertors;
 using Microsoft.Extensions.Logging;
@@ -12,81 +11,62 @@ using System.Threading.Tasks;
 
 namespace COPaymentGateWay.Infrastructure.PaymentsRepo
 {
+
+
     public class PaymentsRepository : IPaymentsRepository
+
     {
-        public IAmazonDynamoDB _dynamoDB;
-        public ITableConfig _paymentConfig;
-        public ILogger _logger;
-
-        public PaymentsRepository(IAmazonDynamoDB dynamoDB, ITableConfig paymentConfig, ILogger<PaymentsRepository> logger)
+        private IPaymentsDataAccess _paymentsDataAcces;
+        private IMockBankRepository _mockBankRepo;
+        private ILogger _logger;
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_paymentsDataAccess"></param>
+        /// <param name="mockBankRepo"></param>
+        /// <param name="logger"></param>
+        public PaymentsRepository(IPaymentsDataAccess _paymentsDataAccess,
+                                  IMockBankRepository mockBankRepo,
+                                  ILogger<PaymentsRepository> logger)
         {
-            _dynamoDB = dynamoDB;
-            _paymentConfig = paymentConfig;
-            _logger = logger;
+            _paymentsDataAcces = _paymentsDataAccess ?? throw new ArgumentNullException(nameof(_paymentsDataAccess));
+            _mockBankRepo = mockBankRepo ?? throw new ArgumentNullException(nameof(mockBankRepo));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<BaseResult> AddPayment(PaymentEntry paymentEntry)
-        {
-            _logger.LogDebug($"Initiating AddPayment Operation");
-
-            BaseResult res = new BaseResult();
-
-            PutItemRequest putRequest = new PutItemRequest
-            {
-                TableName = _paymentConfig.TableName,
-                Item = paymentEntry.ConvertToDynamoDocument().ToAttributeMap()
-            };
-
-
-            var response = await _dynamoDB.PutItemAsync(putRequest);
-
-            //TODO: When usage increases make a common extension method to determine success of dynamoresponse consumer
-            if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
-                res.Success = true;
-            else
-                res.Success = false;
-
-            res.Message = $"DynamoDB Response HttpStatusCode: {response.HttpStatusCode}";
-
-            _logger.LogDebug($"{res.Message}");
-
-            return res;
-
-        }
 
         public async Task<GetPaymentEntryResult> GetPaymentEntry(Guid paymentIdentifier)
         {
-            _logger.LogDebug($"Initiating QueryPayment Operation");
+            return await _paymentsDataAcces.GetPaymentEntry(paymentIdentifier);
+        }
 
-            GetPaymentEntryResult res = new GetPaymentEntryResult();
+        public async Task<BaseResult> ProcessPayment(PaymentEntry paymentEntry)
+        {
+            BaseResult res = new BaseResult();
 
-            QueryRequest request = new QueryRequest
+           var initialDataAccessRes =  await _paymentsDataAcces.AddPayment(paymentEntry);
+
+            var bankRequest = paymentEntry.ConvertToMockPaymentRequest();
+
+            var requestPaymentResponse = _mockBankRepo.RequestPayment(bankRequest);
+
+            paymentEntry.Status = requestPaymentResponse.Status;
+            paymentEntry.BankIdentifier = requestPaymentResponse.Identifier;
+            paymentEntry.BankStatus = requestPaymentResponse.Status;
+
+            //TODO: Replace with partial update
+            var updateRes = await _paymentsDataAcces.AddPayment(paymentEntry);
+
+
+            if (initialDataAccessRes.Success && 
+                requestPaymentResponse.HttpStatus == System.Net.HttpStatusCode.OK && 
+                updateRes.Success)
             {
-                TableName = _paymentConfig.TableName,
-                KeyConditions = new Dictionary<string, Condition> {
-                    {
-                      _paymentConfig.HashKey.ColumnName,
-                        new Condition {
-                            ComparisonOperator = ComparisonOperator.EQ,
-                            AttributeValueList = new List<AttributeValue> { new AttributeValue { S = paymentIdentifier.ToString() } }
-                        }
-
-                    }
-
-                },
-            };
-
-            var queryResponse = await _dynamoDB.QueryAsync(request);
-
-            if (queryResponse.HttpStatusCode == System.Net.HttpStatusCode.OK)
                 res.Success = true;
-            if (queryResponse.Items.Count > 0)
-                res.PaymentEntry = PaymentEntryExtensions.ConvertToPaymentEntry(queryResponse.Items.First());
-
-            res.Message = $"DynamoDB Response HttpStatusCode: {queryResponse.HttpStatusCode}. ItemCount: {queryResponse.Items.Count}";
-
-            _logger.LogDebug($"{res.Message}");
-
+            }
+            else
+                res.Message = $"Error processing payments."; //might be a throw
 
             return res;
         }

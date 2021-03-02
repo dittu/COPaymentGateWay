@@ -1,6 +1,7 @@
 ﻿using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using COPaymentGateWay.Core.Enum;
+using COPaymentGateWay.Core.MockBank.Models;
 using COPaymentGateWay.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -50,5 +51,20 @@ namespace COPaymentGateWay.Infrastructure.PaymentsRepo.Convertors
             return entry;
 
         }
+
+        public static MockBankPaymentRequest ConvertToMockPaymentRequest(this PaymentEntry paymentEntry)
+        {
+            return new MockBankPaymentRequest()
+            {
+                Amount = paymentEntry.Amount,
+                CardNumber = paymentEntry.CardNumber,
+                HolderName = paymentEntry.HolderName,
+                Cvv = paymentEntry.Cvv,
+                ExpiryMonth = paymentEntry.ExpiryMonth,
+                ExpiryYear = paymentEntry.ExpiryYear,
+                CurrencyCode = paymentEntry.ToString()
+            };
+        }
+
     }
 }

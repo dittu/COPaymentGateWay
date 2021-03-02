@@ -9,8 +9,9 @@ namespace COPaymentGateWay.Core.Interfaces
 {
     public interface IPaymentsRepository
     {
-        public Task<BaseResult> AddPayment(PaymentEntry paymentEntry);
+        public Task<BaseResult> ProcessPayment(PaymentEntry paymentEntry);
 
         public Task<GetPaymentEntryResult> GetPaymentEntry(Guid paymentIdentifier);
+
     }
 }

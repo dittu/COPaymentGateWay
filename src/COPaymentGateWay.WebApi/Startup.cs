@@ -70,8 +70,9 @@ namespace COPaymentGateWay.WebApi
             services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
             services.AddAWSService<IAmazonDynamoDB>();
             services.AddScoped<ITableConfig, PaymentsTableConfig>();
-            services.AddScoped<IPaymentsRepository, PaymentsRepository>();
+            services.AddScoped<IPaymentsDataAccess, DynamoPaymentsDataAccess>();
             services.AddScoped<IMockBankRepository, MockBankRepository>();
+            services.AddScoped<IPaymentsRepository, PaymentsRepository>();
 
 
             services.AddApiVersioning(setupAction =>

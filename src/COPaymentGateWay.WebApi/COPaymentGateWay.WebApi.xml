@@ -9,12 +9,11 @@
             
             </summary>
         </member>
-        <member name="M:COPaymentGateWay.WebApi.Controllers.PaymentsController.#ctor(COPaymentGateWay.Core.Interfaces.IPaymentsRepository,COPaymentGateWay.Core.MockBank.Interfaces.IMockBankRepository,Microsoft.Extensions.Logging.ILogger{COPaymentGateWay.WebApi.Controllers.PaymentsController})">
+        <member name="M:COPaymentGateWay.WebApi.Controllers.PaymentsController.#ctor(COPaymentGateWay.Core.Interfaces.IPaymentsRepository,Microsoft.Extensions.Logging.ILogger{COPaymentGateWay.WebApi.Controllers.PaymentsController})">
             <summary>
             
             </summary>
             <param name="paymentsRepo"></param>
-            <param name="mockBankRepo"></param>
             <param name="logger"></param>
         </member>
         <member name="M:COPaymentGateWay.WebApi.Controllers.PaymentsController.CreatePayment(COPaymentGateWay.WebApi.Models.CreatePaymentRequest)">

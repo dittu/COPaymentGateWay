@@ -27,21 +27,17 @@ namespace COPaymentGateWay.WebApi.Controllers
     public class PaymentsController : ControllerBase
     {
         private IPaymentsRepository _paymentRepo;
-        private IMockBankRepository _mockBankRepo;
         private ILogger _logger;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="paymentsRepo"></param>
-        /// <param name="mockBankRepo"></param>
         /// <param name="logger"></param>
         public PaymentsController(IPaymentsRepository paymentsRepo,
-                                  IMockBankRepository mockBankRepo,
                                   ILogger<PaymentsController> logger)
         {
             _paymentRepo = paymentsRepo ?? throw new ArgumentNullException(nameof(paymentsRepo));
-            _mockBankRepo = mockBankRepo ?? throw new ArgumentNullException(nameof(mockBankRepo));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -65,24 +61,16 @@ namespace COPaymentGateWay.WebApi.Controllers
 
             paymentEntry.MerchantId = merchantId;
 
-            await _paymentRepo.AddPayment(paymentEntry);
+            var processPaymentRes = await _paymentRepo.ProcessPayment(paymentEntry);
 
-            var bankRequest = paymentRequest.ConvertToMockPaymentRequest();
-
-            var requestPaymentResponse = _mockBankRepo.RequestPayment(bankRequest);
-
-            paymentEntry.Status = requestPaymentResponse.Status;
-            paymentEntry.BankIdentifier = requestPaymentResponse.Identifier;
-            paymentEntry.BankStatus = requestPaymentResponse.Status;
-
-            //TODO: Replace with partial update
-            await _paymentRepo.AddPayment(paymentEntry);
-
-            return CreatedAtAction(nameof(CreatePayment), new CreatePaymentResponse()
-            {
-                Identifier = paymentEntry.Identifier.ToString(),
-                Status = paymentEntry.Status
-            });
+            if (processPaymentRes.Success)
+                return CreatedAtAction(nameof(CreatePayment), new CreatePaymentResponse()
+                {
+                    Identifier = paymentEntry.Identifier.ToString(),
+                    Status = paymentEntry.Status
+                });
+            else
+                return StatusCode(500);
         }
 
         /// <summary>
@@ -110,7 +98,7 @@ namespace COPaymentGateWay.WebApi.Controllers
                     return Ok(res.PaymentEntry.ConvertToPaymentDetails());
             }
             else
-                throw new Exception("Unable to fetch data.");
+                return StatusCode(500);
         }
 
     }

@@ -28,17 +28,14 @@ namespace UnitTests.Controllers
 
         public Mock<IPaymentsRepository> MockPaymentsRepository { get; set; }
 
-        public Mock<IMockBankRepository> MockBankRepository { get; set; }
-
         public Mock<ILogger<PaymentsController>> MockLogger { get; set; }
 
         [SetUp]
         public void Setup()
         {
             this.MockPaymentsRepository = new Mock<IPaymentsRepository>();
-            this.MockBankRepository = new Mock<IMockBankRepository>();
             this.MockLogger = new Mock<ILogger<PaymentsController>>();
-            this.Controller = new PaymentsController(MockPaymentsRepository.Object, MockBankRepository.Object, MockLogger.Object);
+            this.Controller = new PaymentsController(MockPaymentsRepository.Object, MockLogger.Object);
             var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
                             {
                                             new Claim("MerchantId", "MockMerchantId"),
@@ -74,10 +71,9 @@ namespace UnitTests.Controllers
         public async Task CreatePaymentRequestShouldReturn201Response()
         {
 
-            MockPaymentsRepository.Setup(x => x.AddPayment(It.IsAny<PaymentEntry>())).ReturnsAsync(new BaseResult() { Success = true, Message = "example message" });
+            MockPaymentsRepository.Setup(x => x.ProcessPayment(It.IsAny<PaymentEntry>())).ReturnsAsync(new BaseResult() { Success = true, Message = "example message" });
 
-            MockBankRepository.Setup(x => x.RequestPayment(It.IsAny<MockBankPaymentRequest>())).Returns(new MockBankResponse() { Identifier = Guid.NewGuid().ToString(), Status = PaymentStatus.Authorized });
-
+            
             var response = await this.Controller.CreatePayment(FakeCreatePaymentData.FakeCreatePaymentRequest()) as CreatedAtActionResult;
 
 
