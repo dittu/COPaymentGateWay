@@ -51,3 +51,4 @@ eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1MDAxIiw
 
 ## TODO
 - Integration Tests
+- Code Coverage Monitor
